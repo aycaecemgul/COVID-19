@@ -7,52 +7,90 @@ from skimage.exposure import equalize_adapthist
 from skimage.transform import resize
 from PIL import Image
 import pickle
-
+import uuid
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+import pydicom as dicom
+import gdcm
+from PIL import Image
+import skimage
+from skimage.exposure import equalize_adapthist
 
-DIR = 'C:\\Users\\aycae\\PycharmProjects\\Inceptionv3\\samples'
-CATEGORIES = ["Covid","Healthy","Others"]
-training_data=[]
-IMG_SIZE = 250
-X=[]
-y=[]
+IMG_SIZE = 200
 
-def image_preprocess(img):
+#DICOM TO PNG
 
-  return img
+NEW_DIR="D:\\Tez\\COVID-CT-MD\\COVID"
+DIR="D:\\Tez\\COVID-CT-MD\\1COVID"
 
-#FIXING IMAGE SIZE TO 250x250
-for category in CATEGORIES:
-    path = os.path.join(DIR, category)
-    for img in os.listdir(path):
-        class_no = CATEGORIES.index(category)
-        filename = os.path.join(path, img)
-        img_array = asarray(Image.open(filename).convert('RGB'))
-        img_array = resize(img_array, (250, 250))
-        plt.imsave(filename,img_array)
+for file in os.listdir(DIR):
+    file_path=os.path.join(DIR, file)
+    for img in os.listdir(file_path):
+        new_file_name=file+"-"+img
+        img_path = os.path.join(file_path, img)
+        img_array = asarray(Image.open(img_path).convert("RGB"))
+        new_img_path =  os.path.join(NEW_DIR, new_file_name)
+        plt.imsave(new_img_path, img_array, cmap="gray")
+
+NEW_DIR="D:\\Tez\\COVID-CT-MD\\1COVID"
+DIR="D:\\Tez\\COVID-CT-MD\\orj\\COVID-19 Cases"
+for file in os.listdir(DIR):
+    file_path=os.path.join(DIR, file)
+    new_file_path = os.path.join(NEW_DIR, file)
+    os.makedirs(new_file_path, exist_ok=True)
+    for img in os.listdir(file_path):
+        img_path = os.path.join(file_path, img)
+        ds = dicom.read_file(img_path)
+        img_array = ds.pixel_array
+        new_img_path =  os.path.join(new_file_path, img)
+        plt.imsave(new_img_path[:-3]+"png", img_array, cmap="gray")
+
+NEW_DIR="D:\\Tez\\COVID-CT-MD\\2HEALTHY"
+DIR="D:\\Tez\\COVID-CT-MD\\Normal Cases"
+for file in os.listdir(DIR):
+    file_path=os.path.join(DIR, file)
+    new_file_path = os.path.join(NEW_DIR, file)
+    os.makedirs(new_file_path, exist_ok=True)
+    for img in os.listdir(file_path):
+        img_path = os.path.join(file_path, img)
+        ds = dicom.read_file(img_path)
+        img_array = ds.pixel_array
+        new_img_path =  os.path.join(new_file_path, img)
+        plt.imsave(new_img_path[:-3]+"png", img_array, cmap="gray")
 
 
-for category in CATEGORIES:
-    path = os.path.join(DIR, category)
-    for img in os.listdir(path):
-        class_no = CATEGORIES.index(category)
-        filename = os.path.join(path, img)
-        img_array = asarray(Image.open(filename).convert('RGB'))
-        p_image = skimage.exposure.equalize_adapthist(img_array) #CLAHE
-        X.append(p_image)
-        y.append(class_no)
-        X.append(img_array)
-        y.append(class_no)
+
+#FIXING IMAGE SIZE TO 200 X 200
+def resize_dataset(DIR,IMG_SIZE):
+    for category in os.listdir(DIR):
+        DIR=os.path.join(DIR, category)
+        for patient in os.listdir(DIR):
+            path = os.path.join(DIR, patient)
+            for img in os.listdir(path):
+                img_path=os.path.join(path,img)
+                img=asarray(Image.open(img_path).convert("RGB"))
+                img=resize(img, (IMG_SIZE, IMG_SIZE))
+                plt.imsave(img_path,img,cmap="gray")
 
 
-X=np.array(X).reshape(-1,IMG_SIZE,IMG_SIZE,3)
-y = np.array(y)
-X=X/255.0
+DIR="D:\\Tez\\COVID-CT-MD"
+def clahe(DIR):
+    for category in os.listdir(DIR):
+        file_path=os.path.join(DIR, category)
+        for img in os.listdir(file_path):
+            img_path=os.path.join(file_path,img)
+            img = asarray(Image.open(img_path))
+            img=equalize_adapthist(img)
+            img = equalize_adapthist(img)
+            img_path=img_path[:-4]+"-clahe.png"
+            plt.imsave(img_path, img, cmap="gray")
 
-pickle_out = open("X.pickle","wb")
-pickle.dump(X, pickle_out)
-pickle_out.close()
-
-pickle_out = open("y.pickle","wb")
-pickle.dump(y, pickle_out)
-pickle_out.close()
+file_path="D:\\Tez\\COVID-CT-MD\\1COVID"
+NEW_DIR="D:\\Tez\\COVID-CT-MD\\COVID-clahe"
+for img in os.listdir(file_path):
+    img_path=os.path.join(file_path,img)
+    img_array = asarray(Image.open(img_path))
+    img_array=equalize_adapthist(img_array)
+    img_array = equalize_adapthist(img_array)
+    new_img_path=img[:-4]+"-clahe.png"
+    new_img_path=os.path.join(NEW_DIR,new_img_path)
+    plt.imsave(new_img_path, img_array, cmap="gray")
