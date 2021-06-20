@@ -17,10 +17,8 @@ from skimage.exposure import equalize_adapthist
 
 IMG_SIZE = 200
 
-#DICOM TO PNG
 
-NEW_DIR="D:\\Tez\\COVID-CT-MD\\COVID"
-DIR="D:\\Tez\\COVID-CT-MD\\1COVID"
+DIR="D:\Tez\curated_data"
 
 for file in os.listdir(DIR):
     file_path=os.path.join(DIR, file)
