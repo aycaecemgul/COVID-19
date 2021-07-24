@@ -4,32 +4,75 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image
 from numpy import asarray
+from collections import Counter
 
 CATEGORIES = ["0CAP","1COVID","2HEALTHY"]
 IMG_SIZE=200
 
 
-# pickle_in = open("X_test.pickle","rb")
-# X_test = pickle.load(pickle_in)
+pickle_in = open("X_test.pickle","rb")
+X_test = pickle.load(pickle_in)
+
+pickle_in = open("y_test.pickle","rb")
+y_test = pickle.load(pickle_in)
+
+
+model_A= models.load_model("inceptionv3-covid-19.model")
+
+model_B=models.load_model("vgg16covid-19.model")
+
+model_C=models.load_model("vgg19-covid-19.model")
+
+resultA = model_A.predict([X_test])
+resultB = model_B.predict([X_test])
+resultC = model_C.predict([X_test])
+
+# t=20
+# a=np.argmax(resultA[t])
+# b=np.argmax(resultB[t])
+# c=np.argmax(resultC[t])
 #
-# pickle_in = open("y_test.pickle","rb")
-# y_test = pickle.load(pickle_in)
+# print(a)
+# print(b)
+# print(c)
+
+# vote_list = [a, b, c]
 
 
-model= models.load_model("inceptionv3-covid-19.model")
+def voting(vote_list):
 
-test_path="D:\\Tez\\COVID-CT-MD-TEST\\0CAP\\cap001-IM0012-clahe.png"
-test_image=asarray(Image.open(test_path).convert("RGB"))
-test_image=np.array(test_image).reshape(-1,IMG_SIZE,IMG_SIZE,3)
-print(test_image.shape)
-predict=model.predict(test_image)
+    if ((vote_list[0] != vote_list[1]) and (vote_list[0] != vote_list[2]) and (vote_list[2] != vote_list[1])): #if ensemble cant decide vgg-19 will decide
 
-p=np.argmax(predict)
-q=0
+        return vote_list[2]
 
-print("Actual label of the image: "+str(CATEGORIES[q]))
-print("The prediction of the model: "+str(CATEGORIES[p]))
+    else:
 
-plt.imshow(test_image)
+        data = Counter(vote_list)
+        return data.most_common(1)[0][0]
 
-plt.show()
+
+# print(voting(vote_list))
+# print(y_test[20])
+
+def ensemble_evaluation(y_test,resultA,resultB,resultC):
+    evaluation_list=[]
+    ensemble_list=[]
+    true=0
+    false=0
+    for i in range(len(y_test)):
+        vote_list=[resultA[i],resultB[i],resultC[i]]
+        vote=voting(vote_list)
+        ensemble_list.append(vote)
+        if(vote==y_test[i]):
+            evaluation_list.append(1)
+            true+=1
+        else:
+            evaluation_list.append(0)
+            false+=1
+    accuracy= true/len(y_test)
+
+    print("accuracy= "+ str(accuracy))
+    print("true= "+str(true) )
+    print("false= " + str(false))
+
+ensemble_evaluation(y_test,resultA,resultB,resultC)
