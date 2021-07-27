@@ -5,18 +5,19 @@ import tensorflow as tf
 import tensorflow.keras
 from PIL import Image
 from matplotlib import pyplot as plt
+from skimage.exposure import equalize_adapthist
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.callbacks import ModelCheckpoint, LearningRateScheduler, EarlyStopping, ReduceLROnPlateau
 from numpy import asarray
 from tensorflow.keras.layers import Dense, Flatten,Dropout
 from tensorflow.keras.applications.inception_v3 import InceptionV3
 from numpy import asarray
-
+from skimage import exposure
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
-DIR = "C:\\Users\\aycae\\OneDrive\\Belgeler\\GitHub\\InceptionV3_COVID-19\\dataset"
-CATEGORIES = ["0CAP","1COVID","2HEALTHY"]
+DIR = "D:\\Tez\\curated_data\\curated_data"
+CATEGORIES = ["1NonCOVID","2COVID","3CAP"]
 IMG_SIZE = 200
 IMG_SHAPE=(200,200,3)
 
@@ -29,7 +30,7 @@ dataset_train=tf.keras.preprocessing.image_dataset_from_directory(
     image_size=(IMG_SIZE,IMG_SIZE),
     shuffle=True,
     seed=123,
-    validation_split=0.11,
+    validation_split=0.2,
     subset="training"
 )
 
@@ -42,7 +43,7 @@ dataset_val=tf.keras.preprocessing.image_dataset_from_directory(
     image_size=(IMG_SIZE,IMG_SIZE),
     shuffle=True,
     seed=123,
-    validation_split=0.11,
+    validation_split=0.2,
     subset="validation"
 )
 
@@ -60,32 +61,67 @@ dataset_train = dataset_train.map(lambda x, y: (flip_layer(x), y))
 
 dataset_val = dataset_val.map(lambda x, y: (flip_layer(x), y))
 
+print("done")
 
 
-base_model = InceptionV3(
+model_name="vgg-19"
+# base_model = InceptionV3(
+#                                 weights='imagenet',
+#                                 include_top=False,
+#                                 input_shape=IMG_SHAPE
+#                                 )
+#
+# base_model.trainable=True
+#
+# model = tf.keras.Sequential()
+# model.add(base_model)
+# model.add(Dropout(0.5))
+# model.add(Flatten())
+# model.add(Dense(3, activation='softmax',kernel_regularizer='l1'))
+
+
+
+# base_model = tf.keras.applications.vgg16.VGG16(
+#                                 weights='imagenet',
+#                                 include_top=False,
+#                                 input_shape=IMG_SHAPE
+#                                 )
+#
+# base_model.trainable=True
+# model = tf.keras.Sequential()
+# model.add(base_model)
+# model.add(Dropout(0.2))
+# model.add(Flatten())
+# model.add(Dense(3, activation='softmax',kernel_regularizer='l1'))
+
+
+base_model = tf.keras.applications.vgg19.VGG19(
                                 weights='imagenet',
                                 include_top=False,
                                 input_shape=IMG_SHAPE
                                 )
 
 base_model.trainable=True
-
 model = tf.keras.Sequential()
 model.add(base_model)
 model.add(Dropout(0.1))
 model.add(Flatten())
 model.add(Dense(3, activation='softmax',kernel_regularizer='l1'))
 
-model.summary()
+#
+# model.summary()
+
+
 
 
 model.compile(loss="sparse_categorical_crossentropy", optimizer='adam', metrics=['accuracy'])
 
 
-callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3)
+filepath = model_name+"-covid-19.h5"
+checkpoint = ModelCheckpoint(filepath=filepath, monitor='val_loss', save_best_only=True)
 
 
-history=model.fit(dataset_train,batch_size=32,validation_data = dataset_val,epochs = 8,verbose=2,callbacks=[callback],shuffle=True)
+history=model.fit(dataset_train,validation_data = dataset_val,batch_size=32,epochs = 8,callbacks=[checkpoint],verbose=2,shuffle=True)
 
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
@@ -113,7 +149,7 @@ plt.xlabel('epoch')
 plt.show()
 
 
-model.save("inceptionv3-covid-19.model")
+model.save(model_name+"covid-19.model")
 
 # scores = model.evaluate(X_test, y_test, verbose=0)
 # print("%s: %.2f" % (model.metrics_names[0], scores[0]))
@@ -128,3 +164,9 @@ model.save("inceptionv3-covid-19.model")
 # q=y_test[t]
 # print("Actual label of the image: "+str(CATEGORIES[q]))
 # print("The prediction of the model: "+str(CATEGORIES[p]))
+
+# from keras.models import load_model
+# saved_model = load_model('best_model.h5')
+
+# test_acc = saved_model.evaluate(testX, testy, verbose=0)
+

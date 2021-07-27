@@ -27,41 +27,50 @@ resultA = model_A.predict([X_test])
 resultB = model_B.predict([X_test])
 resultC = model_C.predict([X_test])
 
-# t=20
-# a=np.argmax(resultA[t])
-# b=np.argmax(resultB[t])
-# c=np.argmax(resultC[t])
+# file = open("inception_sonuc.txt", "w+")
+# # Saving the array in a text file
+# content = str(resultA)
+# file.write(content)
+# file.close()
 #
-# print(a)
-# print(b)
-# print(c)
+# file = open("vgg16_sonuc.txt", "w+")
+# # Saving the array in a text file
+# content = str(resultB)
+# file.write(content)
+# file.close()
 
-# vote_list = [a, b, c]
-
-
-def voting(vote_list):
-
-    if ((vote_list[0] != vote_list[1]) and (vote_list[0] != vote_list[2]) and (vote_list[2] != vote_list[1])): #if ensemble cant decide vgg-19 will decide
-
-        return vote_list[2]
-
-    else:
-
-        data = Counter(vote_list)
-        return data.most_common(1)[0][0]
+# file = open("vgg19_sonuc.txt", "w+")
+# # Saving the array in a text file
+# content = str(resultC)
+# file.write(content)
+# file.close()
 
 
-# print(voting(vote_list))
-# print(y_test[20])
+def voting(resultA,resultB,resultC):
+
+    sonuc_list=[]
+    for i in range(3):
+        sonuc=(resultA[i]+resultB[i]+resultC[i] )/3
+        sonuc_list.append(sonuc)
+
+    max_value = max(sonuc_list)
+    vote = sonuc_list.index(max_value)
+
+    return vote
+
+
 
 def ensemble_evaluation(y_test,resultA,resultB,resultC):
     evaluation_list=[]
     ensemble_list=[]
     true=0
     false=0
+    cov_hata=0
+    saglikli_hata=0
+    diger_hata=0
     for i in range(len(y_test)):
-        vote_list=[resultA[i],resultB[i],resultC[i]]
-        vote=voting(vote_list)
+
+        vote=voting(resultA[i],resultB[i],resultC[i])
         ensemble_list.append(vote)
         if(vote==y_test[i]):
             evaluation_list.append(1)
@@ -69,10 +78,21 @@ def ensemble_evaluation(y_test,resultA,resultB,resultC):
         else:
             evaluation_list.append(0)
             false+=1
+            if(y_test[i]==0):
+                diger_hata+=1
+            elif(y_test[i]==1):
+                cov_hata+=1
+            elif (y_test[i] == 2):
+                saglikli_hata+=1
+
     accuracy= true/len(y_test)
 
     print("accuracy= "+ str(accuracy))
     print("true= "+str(true) )
     print("false= " + str(false))
+    print("sağlıklı hata= "+ str(saglikli_hata))
+    print("cov hata= "+ str(cov_hata))
+    print("diğer hata= " + str(diger_hata))
 
 ensemble_evaluation(y_test,resultA,resultB,resultC)
+

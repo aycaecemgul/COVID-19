@@ -6,9 +6,10 @@ import skimage
 from PIL import Image
 import random
 from matplotlib import pyplot as plt
+from skimage.transform import resize
 
-CATEGORIES = ["0CAP","1COVID","2HEALTHY"]
-DIR="D:\\Tez\\COVID-CT-MD-TEST\\"
+CATEGORIES = ["1NonCOVID","2COVID","3CAP"]
+DIR="D:\\Tez\\curated_data\\test"
 X=[]
 y=[]
 training_data=[]
@@ -21,6 +22,7 @@ for category in os.listdir(DIR):
         class_no = CATEGORIES.index(category)
         try:
             img_array = asarray(Image.open(img_path).convert("RGB"))
+            img_array = resize(img_array, (IMG_SIZE, IMG_SIZE))
             training_data.append([img_array, class_no])
         except Exception as e:
             print("error")
