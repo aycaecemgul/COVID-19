@@ -27,23 +27,23 @@ resultA = model_A.predict([X_test])
 resultB = model_B.predict([X_test])
 resultC = model_C.predict([X_test])
 
-# file = open("inception_sonuc.txt", "w+")
-# # Saving the array in a text file
-# content = str(resultA)
-# file.write(content)
-# file.close()
-#
-# file = open("vgg16_sonuc.txt", "w+")
-# # Saving the array in a text file
-# content = str(resultB)
-# file.write(content)
-# file.close()
+file = open("inception_sonuc.txt", "w+")
+# Saving the array in a text file
+content = str(resultA)
+file.write(content)
+file.close()
 
-# file = open("vgg19_sonuc.txt", "w+")
-# # Saving the array in a text file
-# content = str(resultC)
-# file.write(content)
-# file.close()
+file = open("vgg16_sonuc.txt", "w+")
+# Saving the array in a text file
+content = str(resultB)
+file.write(content)
+file.close()
+
+file = open("vgg19_sonuc.txt", "w+")
+# Saving the array in a text file
+content = str(resultC)
+file.write(content)
+file.close()
 
 
 def voting(resultA,resultB,resultC):
