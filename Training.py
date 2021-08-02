@@ -16,7 +16,7 @@ from skimage import exposure
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 
-DIR = "D:\\Tez\\curated_data\\curated_data"
+DIR = "curated_data\\curated_data"
 CATEGORIES = ["1NonCOVID","2COVID","3CAP"]
 IMG_SIZE = 200
 IMG_SHAPE=(200,200,3)
@@ -108,8 +108,8 @@ model.add(Dropout(0.1))
 model.add(Flatten())
 model.add(Dense(3, activation='softmax',kernel_regularizer='l1'))
 
-#
-# model.summary()
+
+model.summary()
 
 
 

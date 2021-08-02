@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 from skimage.transform import resize
 
 CATEGORIES = ["1NonCOVID","2COVID","3CAP"]
-DIR="D:\\Tez\\curated_data\\test"
+DIR="curated_data\\test"
 X=[]
 y=[]
 training_data=[]
